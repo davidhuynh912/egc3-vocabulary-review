@@ -192,20 +192,26 @@ function flashView() {
     return;
   }
   const card = deck[cardIndex];
-  const seen = deck.filter(entry => reviewed.has(entry.id)).length;
-  const known = deck.filter(entry => learned.has(entry.id)).length;
   const isLearned = learned.has(card.id);
   content.innerHTML = `<div class="panel">
-    <div class="meter-label"><span>Card ${cardIndex + 1} of ${deck.length}</span><span>${seen} reviewed · ${known} learned</span></div>
-    <progress value="${seen}" max="${deck.length}" aria-label="Cards reviewed"></progress>
+    <div class="meter-label"><span>Card ${cardIndex + 1} of ${deck.length}</span><span data-card-progress></span></div>
+    <progress value="0" max="${deck.length}" aria-label="Cards reviewed"></progress>
     <div class="flash-shell">
       <div class="flash-tools"><span> ${card.unit ? `Unit ${card.unit} · ${text(vocabulary.units[card.unit])}` : "Classification needs review"} ${pill(card.section)}</span>${speaker(card)}</div>
       <div class="flash-card ${revealed ? "revealed" : ""}">
         <button type="button" class="flip-trigger" data-action="flip" aria-expanded="${revealed}" aria-controls="card-details"
           aria-label="${text(card.word)}. ${revealed ? "Hide" : "Reveal"} details"></button>
-        <span class="flash-word">${text(card.word)}</span>
-        <div id="card-details" ${revealed ? "" : "hidden"}>${metadata(card)}${definitions(card)}</div>
-        <span class="flash-hint">${revealed ? "Tap to hide" : "Tap to reveal"}</span>
+        <div class="flash-rotor">
+          <div class="flash-face flash-front" aria-hidden="${revealed}">
+            <span class="flash-word">${text(card.word)}</span>
+            <span class="flash-hint">Tap to reveal</span>
+          </div>
+          <div id="card-details" class="flash-face flash-back" aria-hidden="${!revealed}">
+            <span class="flash-back-word">${text(card.word)}</span>
+            ${metadata(card)}${definitions(card)}
+            <span class="flash-hint">Tap to hide</span>
+          </div>
+        </div>
       </div>
     </div>
     <div class="controls">
@@ -215,6 +221,30 @@ function flashView() {
       <button class="button primary" data-action="learned" aria-pressed="${isLearned}">${isLearned ? "Learned · Undo" : "Mark as learned"}</button>
     </div>
   </div>`;
+  updateCardProgress();
+}
+
+function updateCardProgress() {
+  const seen = deck.filter(entry => reviewed.has(entry.id)).length;
+  const known = deck.filter(entry => learned.has(entry.id)).length;
+  content.querySelector("[data-card-progress]").textContent = `${seen} reviewed · ${known} learned`;
+  content.querySelector("progress").value = seen;
+}
+
+function flipCard(button) {
+  const card = deck[cardIndex];
+  revealed = !revealed;
+  const shell = button.closest(".flash-card");
+  shell.classList.toggle("revealed", revealed);
+  shell.querySelector(".flash-front").setAttribute("aria-hidden", String(revealed));
+  shell.querySelector(".flash-back").setAttribute("aria-hidden", String(!revealed));
+  button.setAttribute("aria-expanded", String(revealed));
+  button.setAttribute("aria-label", `${card.word}. ${revealed ? "Hide" : "Reveal"} details`);
+  if (revealed && !reviewed.has(card.id)) {
+    reviewed.add(card.id);
+    save("reviewed", [...reviewed]);
+    updateCardProgress();
+  }
 }
 
 function questionList() {
@@ -361,11 +391,8 @@ function handleAction(event) {
   }
   if (mode === "flashcards") {
     if (action === "flip") {
-      revealed = !revealed;
-      if (revealed) {
-        reviewed.add(deck[cardIndex].id);
-        save("reviewed", [...reviewed]);
-      }
+      flipCard(button);
+      return;
     } else if (action === "previous" || action === "next-card") {
       cardIndex += action === "previous" ? -1 : 1;
       revealed = false;

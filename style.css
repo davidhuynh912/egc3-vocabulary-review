@@ -117,14 +117,35 @@ progress::-webkit-progress-value { background: var(--blue); border-radius: 99px;
 progress::-moz-progress-bar { background: var(--blue); border-radius: 99px; }
 .flash-shell { display: grid; gap: 10px; margin-top: 18px; }
 .flash-tools { display: flex; align-items: center; justify-content: space-between; }
-.flash-card { position: relative; display: grid; align-content: center; justify-items: center; gap: 10px; min-height: 260px; width: 100%; background: #edf2ff; border: 1px solid #d5e2ff; border-radius: 16px; text-align: center; padding: 20px; }
-.flash-card:hover { background: #e6eeff; }
-.flash-card.revealed { background: #f2f7ff; }
-.flip-trigger { position: absolute; inset: 0; background: transparent; border: 0; border-radius: inherit; }
-.flash-card .word-meta { justify-content: center; margin-bottom: 7px; }
-.flash-card .definitions { max-width: 620px; }
+.flash-card { position: relative; min-width: 0; border-radius: 16px; perspective: 1100px; }
+.flash-rotor { display: grid; grid-template-columns: minmax(0, 1fr); border-radius: inherit; transform-style: preserve-3d; transition: transform 480ms cubic-bezier(.25, .65, .3, 1); }
+.flash-card.revealed .flash-rotor { transform: rotateY(180deg); }
+.flash-face {
+  grid-area: 1 / 1;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 260px;
+  padding: clamp(16px, 4vw, 26px);
+  border: 1px solid #d5e2ff;
+  border-radius: inherit;
+  text-align: center;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.flash-front { background: #edf2ff; }
+.flash-back { background: #f2f7ff; transform: rotateY(180deg); }
+.flip-trigger { position: absolute; inset: 0; z-index: 1; background: transparent; border: 0; border-radius: inherit; }
+.flash-face .word-meta { justify-content: center; }
+.flash-face .definitions { width: min(100%, 620px); }
 .flash-word { font-size: clamp(1.7rem, 4.5vw, 2.6rem); line-height: 1.2; font-weight: 800; letter-spacing: -.034em; overflow-wrap: anywhere; max-width: 100%; }
+.flash-back-word { max-width: 100%; font-size: 1.25rem; font-weight: 800; overflow-wrap: anywhere; }
 .flash-hint { color: #3b5199; font-weight: 700; }
+@media (prefers-reduced-motion: reduce) {
+  .flash-rotor { transition: none; }
+}
 .question { margin: 13px 0 16px; font-size: clamp(1.2rem, 2.4vw, 1.55rem); line-height: 1.45; font-weight: 700; }
 .question .blank { color: var(--blue); letter-spacing: .04em; }
 .answers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
