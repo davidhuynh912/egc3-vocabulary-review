@@ -119,7 +119,7 @@ progress::-moz-progress-bar { background: var(--blue); border-radius: 99px; }
 .flash-tools { display: flex; align-items: center; justify-content: space-between; }
 .flash-card { position: relative; min-width: 0; border-radius: 16px; perspective: 1100px; }
 .flash-rotor { display: grid; grid-template-columns: minmax(0, 1fr); border-radius: inherit; transform-style: preserve-3d; transition: transform 480ms cubic-bezier(.25, .65, .3, 1); }
-.flash-card.revealed .flash-rotor { transform: rotateY(180deg); }
+.flash-card.revealed .flash-rotor { transform: rotateX(180deg); }
 .flash-face {
   grid-area: 1 / 1;
   display: grid;
@@ -136,7 +136,7 @@ progress::-moz-progress-bar { background: var(--blue); border-radius: 99px; }
   backface-visibility: hidden;
 }
 .flash-front { background: #edf2ff; }
-.flash-back { background: #f2f7ff; transform: rotateY(180deg); }
+.flash-back { background: #f2f7ff; transform: rotateX(180deg); }
 .flip-trigger { position: absolute; inset: 0; z-index: 1; background: transparent; border: 0; border-radius: inherit; }
 .flash-face .word-meta { justify-content: center; }
 .flash-face .definitions { width: min(100%, 620px); }
