@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f7ff">
+  <meta name="description" content="Review Skillful 2 vocabulary across ten units with bilingual word lists, flashcards and practice.">
+  <title>Word Studio · EGC 3</title>
+  <link rel="stylesheet" href="style.css?v=recorded-audio">
+  <script defer src="vocabulary.js"></script>
+  <script defer src="questions.js"></script>
+  <script defer src="audio-clips.js?v=isabella-phrases"></script>
+  <script defer src="app.js?v=isabella-phrases"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to study content</a>
+  <header class="topbar">
+    <div class="frame topbar-inner">
+      <a class="brand" href="#vocabulary" aria-label="Word Studio vocabulary">
+        <span class="brand-mark" data-icon="book"></span>
+        <span>Word Studio<small>EGC 3 · Skillful 2</small></span>
+      </a>
+      <nav class="navigation" aria-label="Study modes">
+        <a href="#vocabulary" data-view="vocabulary"><span data-icon="book"></span>Vocabulary</a>
+        <a href="#flashcards" data-view="flashcards"><span data-icon="cards"></span>Flashcards</a>
+        <a href="#practice" data-view="practice"><span data-icon="pencil"></span>Practice</a>
+      </nav>
+      <span class="language">EN <span>·</span> VI</span>
+    </div>
+  </header>
+  <main id="main" class="frame">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow">SKILLFUL 2 VOCABULARY</p>
+        <h1 id="hero-title">A little practice.<br><em>A lot more words.</em></h1>
+        <p>Explore the word lists, hear British English pronunciation, and see how much you remember.</p>
+      </div>
+      <div class="hero-art" aria-hidden="true"><img src="mascot.webp" alt="" width="400" height="290"></div>
+    </section>
+    <div id="source-notice"></div>
+    <div class="workspace">
+      <aside class="unit-panel" aria-label="Filter by unit">
+        <div class="unit-title"><span data-icon="layers"></span><h2>Units</h2></div>
+        <div id="unit-options" class="unit-options"></div>
+        <div class="mobile-units"><label for="unit-select">Study unit</label><select id="unit-select"></select></div>
+      </aside>
+      <section class="study" aria-labelledby="mode-title">
+        <header class="study-heading">
+          <div><h2 id="mode-title" tabindex="-1">Vocabulary</h2><p id="mode-description"></p></div>
+          <p id="scope-count" class="count" aria-live="polite"></p>
+        </header>
+        <div class="filters">
+          <div class="search" id="search-wrap">
+            <span data-icon="search"></span>
+            <input type="search" id="search" aria-label="Search vocabulary" placeholder="Search words or meanings…">
+          </div>
+          <div class="section-options" role="group" aria-label="Filter by skill">
+            <button type="button" data-section="all">All skills</button>
+            <button type="button" data-section="LS" aria-label="LS — Listening–Speaking">LS</button>
+            <button type="button" data-section="WR" aria-label="WR — Writing–Reading">WR</button>
+          </div>
+        </div>
+        <div id="study-content"></div>
+      </section>
+    </div>
+    <audio id="pronunciation-player" preload="none" hidden></audio>
+    <div id="audio-status" role="status" class="audio-status" hidden></div>
+    <noscript><p>Enable JavaScript to use Word Studio.</p></noscript>
+  </main>
+  <footer class="frame footer">
+    <span>Word Studio · EGC 3</span>
+    <span>Skillful 2, Second Edition · LS = Listening–Speaking · WR = Writing–Reading</span>
+  </footer>
+</body>
+</html>
