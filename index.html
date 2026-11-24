@@ -5,42 +5,62 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f4f7ff">
   <meta name="description" content="Review Skillful 2 vocabulary and grammar across ten units with bilingual word lists, flashcards and practice.">
-  <title>Word Studio · EGC 3</title>
-  <link rel="stylesheet" href="style.css?v=grammar-lessons">
+  <title>David’s Review Hub</title>
+  <link rel="stylesheet" href="style.css?v=review-hub">
   <script defer src="vocabulary.js"></script>
   <script defer src="grammar.js"></script>
+  <script defer src="grammar-practice.js"></script>
   <script defer src="questions.js"></script>
   <script defer src="audio-clips.js?v=isabella-phrases"></script>
-  <script defer src="app.js?v=grammar-lessons"></script>
+  <script defer src="app.js?v=review-hub"></script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to study content</a>
+  <div class="hub-layout">
   <header class="topbar">
     <div class="frame topbar-inner">
-      <a class="brand" href="#vocabulary" aria-label="Word Studio vocabulary">
+      <a class="brand" href="#home" aria-label="David’s Review Hub home">
         <span class="brand-mark" data-icon="book"></span>
-        <span>Word Studio<small>EGC 3 · Skillful 2</small></span>
+        <span>David’s Review Hub<small>EGC 3 · Skillful 2</small></span>
       </a>
       <nav class="navigation" aria-label="Study modes">
+        <a href="#home" data-view="home"><span data-icon="home"></span>Home</a>
         <a href="#vocabulary" data-view="vocabulary"><span data-icon="book"></span>Vocabulary</a>
-        <a href="#grammar" data-view="grammar"><span data-icon="grammar"></span>Grammar</a>
         <a href="#flashcards" data-view="flashcards"><span data-icon="cards"></span>Flashcards</a>
-        <a href="#practice" data-view="practice"><span data-icon="pencil"></span>Practice</a>
+        <a href="#grammar" data-view="grammar"><span data-icon="grammar"></span>Grammar</a>
+        <a href="#practice" data-view="practice"><span data-icon="pencil"></span>Vocabulary Practice</a>
+        <a href="#grammar-practice" data-view="grammar-practice"><span data-icon="check"></span>Grammar Practice</a>
       </nav>
-      <span class="language">EN <span>·</span> VI</span>
     </div>
   </header>
-  <main id="main" class="frame">
+  <div class="hub-main">
+  <main id="main" class="frame" tabindex="-1">
+    <div id="home-page">
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-copy">
-        <p class="eyebrow">SKILLFUL 2 VOCABULARY</p>
-        <h1 id="hero-title">A little practice.<br><em>A lot more words.</em></h1>
-        <p>Explore the word lists, hear British English pronunciation, and see how much you remember.</p>
+        <p class="eyebrow">EGC 3 · SKILLFUL 2</p>
+        <h1 id="hero-title">Welcome to<br><em>David’s Review Hub</em></h1>
+        <p>Review vocabulary and grammar from Units 1–10, then see what you remember.</p>
+        <div class="home-actions">
+          <a class="button primary" href="#vocabulary">Explore vocabulary</a>
+          <a class="button" href="#grammar-practice">Practise grammar</a>
+        </div>
       </div>
       <div class="hero-art" aria-hidden="true"><img src="mascot.webp" alt="" width="400" height="290"></div>
     </section>
+    <section aria-labelledby="home-study-title">
+      <h2 id="home-study-title">Choose what to study</h2>
+      <div class="home-tiles">
+        <a class="home-tile" href="#vocabulary"><span data-icon="book"></span><h3>Vocabulary</h3><p>Find words, meanings and British pronunciation.</p></a>
+        <a class="home-tile" href="#flashcards"><span data-icon="cards"></span><h3>Flashcards</h3><p>Flip cards, listen and review at your own pace.</p></a>
+        <a class="home-tile" href="#grammar"><span data-icon="grammar"></span><h3>Grammar</h3><p>Review Form, Meaning and Use for each topic.</p></a>
+        <a class="home-tile" href="#practice"><span data-icon="pencil"></span><h3>Vocabulary Practice</h3><p>Choose the word that fits the context.</p></a>
+        <a class="home-tile" href="#grammar-practice"><span data-icon="check"></span><h3>Grammar Practice</h3><p>Try four exercise types and check your answers.</p></a>
+      </div>
+    </section>
+    </div>
     <div id="source-notice"></div>
-    <div class="workspace">
+    <div id="study-page" class="workspace" hidden>
       <aside class="unit-panel" aria-label="Filter by unit">
         <div class="unit-title"><span data-icon="layers"></span><h2>Units</h2></div>
         <div id="unit-options" class="unit-options"></div>
@@ -73,11 +93,13 @@
         <button type="submit" class="button primary" autofocus>Got it!</button>
       </form>
     </dialog>
-    <noscript><p>Enable JavaScript to use Word Studio.</p></noscript>
+    <noscript><p>Enable JavaScript to study on David’s Review Hub.</p></noscript>
   </main>
   <footer class="frame footer">
-    <span>Word Studio · EGC 3</span>
+    <span>David’s Review Hub · EGC 3</span>
     <span>Skillful 2, Second Edition · LS = Listening–Speaking · WR = Writing–Reading</span>
   </footer>
+  </div>
+  </div>
 </body>
 </html>

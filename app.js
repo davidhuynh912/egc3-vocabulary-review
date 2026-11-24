@@ -1,6 +1,8 @@
 "use strict";
 
 const icons = {
+  home: '<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',
+  check: '<path d="M10 3h4l1 2h4v16H5V5h4l1-2Zm-2 10 3 3 5-6"/>',
   book: '<path d="M12 7v14m0-14C8 4 4 4 2.5 5v14c3-1 6-.5 9.5 2 3.5-2.5 6.5-3 9.5-2V5C20 4 16 4 12 7Z"/>',
   cards: '<rect x="8" y="7" width="12" height="14" rx="2"/><path d="M5 17H4a1 1 0 0 1-1-1V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2"/>',
   pencil: '<path d="m16 3 5 5M4 20l4-1 12-12a2.8 2.8 0 0 0-4-4L4 15l-1 6 6-1"/>',
@@ -30,10 +32,12 @@ const flashBurst = { limit: 2, windowMs: 1000 };
 const flashWindow = { limit: 8, windowMs: 5000 };
 let slowDownIndex = 0;
 const modes = {
+  home: ["Home", ""],
   vocabulary: ["Vocabulary", "Find words, meanings and examples from the Skillful 2 word lists."],
   grammar: ["Grammar", "See how each structure is formed, what it means and when to use it."],
   flashcards: ["Flashcards", "Recall the meaning, then flip the card to check."],
-  practice: ["Practice", "Choose the word or phrase that best completes each sentence."],
+  practice: ["Vocabulary Practice", "Choose the word or phrase that best completes each sentence."],
+  "grammar-practice": ["Grammar Practice", "Choose a lesson and practise using the grammar in context."],
 };
 const units = Object.keys(vocabulary.units);
 const entries = new Map(vocabulary.entries.map(entry => [entry.id, entry]));
@@ -63,7 +67,7 @@ function save(key, value) {
 
 function currentMode() {
   const hash = location.hash.slice(1);
-  return Object.hasOwn(modes, hash) ? hash : "vocabulary";
+  return Object.hasOwn(modes, hash) ? hash : "home";
 }
 
 let mode = currentMode();
@@ -77,6 +81,11 @@ let revealed = false;
 let autoPronounce = load("auto-pronounce", false) === true;
 let feedbackID = null;
 let completed = false;
+let selectedGrammarLesson = "";
+let selectedGrammarType = "all";
+let grammarFeedbackID = null;
+const grammarAttempts = new Map();
+const grammarDecks = new Map();
 let reviewed = new Set(load("reviewed", []).filter(id => entries.has(id)));
 let learned = new Set(load("learned", []).filter(id => entries.has(id)));
 let responses = Object.fromEntries(Object.entries(load("responses", {})).filter(([id, choice]) =>
@@ -113,6 +122,10 @@ function updateChrome() {
     if (link.dataset.view === mode) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
   });
+  $("#home-page").hidden = mode !== "home";
+  $("#study-page").hidden = mode === "home";
+  $("#source-notice").hidden = mode === "home";
+  if (mode === "home") return;
   $("#mode-title").textContent = modes[mode][0];
   $("#mode-description").textContent = modes[mode][1];
   $("#search-wrap").hidden = mode !== "vocabulary";
@@ -225,6 +238,7 @@ function grammarView() {
           <h5>Examples</h5>
           <ul>${lesson.examples.map(example => `<li>${text(example)}</li>`).join("")}</ul>
         </div>
+        <a class="button lesson-practice" href="#grammar-practice" data-grammar-lesson="${grammarLessonKey(lesson)}">Practise this lesson</a>
       </article>`).join("");
     return `<section class="unit-group"><h3><span>Unit ${unitID}</span> · ${text(vocabulary.units[unitID])}</h3>
       <div class="grammar-lessons">${cards}</div></section>`;
@@ -361,11 +375,130 @@ function practiceView() {
     </div>${breakdown}</div>`;
 }
 
+function grammarQuestionList() {
+  if (!grammarDecks.has(selectedGrammarLesson)) {
+    const lesson = grammarLessons.find(item => grammarLessonKey(item) === selectedGrammarLesson);
+    grammarDecks.set(selectedGrammarLesson, grammarExercises(lesson).map(question => ({
+      ...question, options: shuffle(question.options),
+    })));
+  }
+  return grammarDecks.get(selectedGrammarLesson).filter(question =>
+    selectedGrammarType === "all" || question.type === selectedGrammarType);
+}
+
+function currentGrammarQuestion(list) {
+  return list.find(question => question.id === grammarFeedbackID)
+    || list.find(question => !grammarAttempts.has(question.id));
+}
+
+function grammarPracticeView() {
+  const lessons = grammarLessons.filter(lesson => matches(lesson));
+  if (!lessons.length) {
+    $("#scope-count").textContent = "0 questions";
+    content.innerHTML = empty("No lessons in this selection", "Choose another unit or skill.");
+    return;
+  }
+  const lesson = lessons.find(item => grammarLessonKey(item) === selectedGrammarLesson) ?? lessons[0];
+  selectedGrammarLesson = grammarLessonKey(lesson);
+  const lessonOptions = lessons.map(item => {
+    const key = grammarLessonKey(item);
+    return `<option value="${key}" ${key === selectedGrammarLesson ? "selected" : ""}>Unit ${item.unit} · ${item.section} · ${text(item.title)}</option>`;
+  }).join("");
+  const typeOptions = Object.entries(grammarExerciseTypes).map(([type, { label, count }]) =>
+    `<option value="${type}" ${type === selectedGrammarType ? "selected" : ""}>${label} (${count})</option>`).join("");
+  const list = grammarQuestionList();
+  const current = currentGrammarQuestion(list);
+  const answered = list.filter(question => grammarAttempts.has(question.id));
+  const correct = answered.filter(question => grammarAttempts.get(question.id).right).length;
+  $("#scope-count").textContent = `${list.length} questions`;
+  const filters = `<div class="panel grammar-practice-filters">
+    <div><label for="grammar-lesson-select">Lesson</label><select id="grammar-lesson-select">${lessonOptions}</select></div>
+    <div><label for="grammar-type-select">Exercise type</label><select id="grammar-type-select"><option value="all">All types (30)</option>${typeOptions}</select></div>
+  </div>`;
+  const meter = `<div class="meter-label"><span>Unit ${lesson.unit} · ${pill(lesson.section)}</span>
+    <span>Score ${correct}/${answered.length} · ${answered.length}/${list.length} answered</span></div>
+    <progress value="${answered.length}" max="${list.length}" aria-label="Grammar questions answered"></progress>`;
+  const retry = `<button type="button" class="button" data-grammar-action="retry">Retry ${selectedGrammarType === "all" ? "lesson" : "exercise type"}</button>`;
+  if (!current) {
+    content.innerHTML = `${filters}<div class="panel">${meter}
+      <div class="quiz-complete"><h3 tabindex="-1" data-grammar-focus>Practice complete</h3>
+      <p>You answered ${correct} of ${list.length} questions correctly.</p></div>
+      <div class="controls">${retry}</div></div>`;
+    return;
+  }
+  const attempt = grammarAttempts.get(current.id);
+  const prompt = text(current.prompt).replace("___", '<span class="blank" aria-label="blank">_____</span>');
+  const instructions = {
+    choice: "Choose the best answer to complete the sentence.",
+    fill: "Type the words or punctuation that go in the blank.",
+    correction: "Read the sentence with the error, then choose the corrected version.",
+    apply: "Replace the text in brackets and type the entire corrected sentence.",
+  };
+  const answerControls = current.options.length ? `<div class="answers" role="group" aria-label="Answer choices">
+    ${current.options.map((option, index) => {
+      const state = attempt && (option === current.answers[0] ? "right" : option === attempt.value ? "wrong" : "");
+      return `<button type="button" class="answer ${state || ""}" data-grammar-action="answer" data-index="${index}" ${attempt ? 'aria-disabled="true"' : ""}>
+      <b aria-hidden="true">${"ABCD"[index]}</b><span>${text(option)}</span>
+      ${state ? `<span aria-label="${state === "right" ? "Correct answer" : "Your answer is incorrect"}">${state === "right" ? "✓" : "✕"}</span>` : ""}</button>`;
+    }).join("")}</div>` : `<form id="grammar-response" class="grammar-response">
+      <label>Your answer${grammarAnswerField(current.type, attempt)}</label>
+      ${attempt ? "" : '<button type="submit" class="button primary">Check answer</button>'}
+    </form>`;
+  const feedback = attempt ? `<div class="feedback ${attempt.right ? "right" : "wrong"}" tabindex="-1" data-grammar-feedback>
+      <p><strong>${attempt.right ? "Correct!" : "Incorrect."}</strong>
+      ${attempt.right ? "" : ` Correct answer <strong>${text(current.answers[0])}</strong>`}</p>
+      <p>${text(current.explanation)}</p></div>` : "";
+  content.innerHTML = `${filters}<div class="panel">${meter}
+    <div class="quiz-meta"><span>Question ${list.indexOf(current) + 1} of ${list.length}</span><span>${grammarExerciseTypes[current.type].label}</span></div>
+    <p class="grammar-prompt">${instructions[current.type]} ${text(current.cue)}</p>
+    <h3 class="question" tabindex="-1" data-grammar-focus>${prompt}</h3>
+    ${answerControls}${feedback}
+    <div class="controls">
+      ${attempt ? `<button type="button" class="button primary" data-grammar-action="next">${answered.length === list.length ? "View results" : "Next question"}</button>` : ""}
+      ${answered.length ? retry : ""}
+    </div></div>`;
+}
+
+function grammarAnswerField(type, attempt) {
+  const attributes = `name="grammarAnswer" autocomplete="off" autocapitalize="off" spellcheck="false" required ${attempt ? "readonly" : ""}`;
+  const value = text(attempt?.value ?? "");
+  return type === "apply" ? `<textarea rows="3" ${attributes}>${value}</textarea>` :
+    `<input ${attributes} value="${value}">`;
+}
+
+function submitGrammarAnswer(value) {
+  const current = currentGrammarQuestion(grammarQuestionList());
+  if (!current || grammarAttempts.has(current.id) || !value.trim()) return;
+  const wholeSentence = current.type === "correction" || current.type === "apply";
+  const normalized = normalizeGrammarAnswer(value, wholeSentence);
+  const right = current.answers.some(answer => normalizeGrammarAnswer(answer, wholeSentence) === normalized);
+  grammarAttempts.set(current.id, { value, right });
+  grammarFeedbackID = current.id;
+  grammarPracticeView();
+  $("[data-grammar-feedback]").focus();
+}
+
+function handleGrammarAction(event) {
+  const button = event.target.closest("[data-grammar-action]");
+  if (!button || button.getAttribute("aria-disabled") === "true") return;
+  const list = grammarQuestionList();
+  const action = button.dataset.grammarAction;
+  if (action === "answer") {
+    submitGrammarAnswer(currentGrammarQuestion(list).options[Number(button.dataset.index)]);
+    return;
+  }
+  if (action === "retry") list.forEach(question => grammarAttempts.delete(question.id));
+  grammarFeedbackID = null;
+  grammarPracticeView();
+  $("[data-grammar-focus]").focus();
+}
+
 function render() {
   if (mode === "vocabulary") vocabularyView();
   else if (mode === "grammar") grammarView();
   else if (mode === "flashcards") flashView();
-  else practiceView();
+  else if (mode === "practice") practiceView();
+  else if (mode === "grammar-practice") grammarPracticeView();
 }
 
 function resetView() {
@@ -373,6 +506,7 @@ function resetView() {
   cardIndex = 0;
   revealed = false;
   feedbackID = null;
+  grammarFeedbackID = null;
   completed = false;
   deck = vocabulary.entries.filter(entry => matches(entry, unit));
   updateChrome();
@@ -532,8 +666,27 @@ window.addEventListener("hashchange", () => {
   if (next === "practice" && unit !== "all") practiceUnit = unit;
   mode = next;
   resetView();
+  window.scrollTo(0, 0);
+  $(mode === "home" ? "#main" : "#mode-title").focus({ preventScroll: true });
 });
-content.addEventListener("click", handleAction);
+$(".skip").addEventListener("click", event => {
+  event.preventDefault();
+  $("#main").focus();
+});
+content.addEventListener("click", event => {
+  const lessonLink = event.target.closest("[data-grammar-lesson]");
+  if (lessonLink) {
+    selectedGrammarLesson = lessonLink.dataset.grammarLesson;
+    selectedGrammarType = "all";
+  }
+  if (mode === "grammar-practice") handleGrammarAction(event);
+  else handleAction(event);
+});
+content.addEventListener("submit", event => {
+  if (event.target.id !== "grammar-response") return;
+  event.preventDefault();
+  submitGrammarAnswer(event.target.elements.grammarAnswer.value);
+});
 flashSpeedDialog.addEventListener("cancel", event => event.preventDefault());
 flashSpeedDialog.addEventListener("click", event => {
   if (event.target === flashSpeedDialog) flashSpeedDialog.querySelector("button").focus();
@@ -542,6 +695,13 @@ flashSpeedDialog.addEventListener("keydown", event => {
   if (event.repeat && (event.key === "Enter" || event.key === " ")) event.preventDefault();
 });
 content.addEventListener("change", event => {
+  if (event.target.id === "grammar-lesson-select" || event.target.id === "grammar-type-select") {
+    if (event.target.id === "grammar-lesson-select") selectedGrammarLesson = event.target.value;
+    else selectedGrammarType = event.target.value;
+    grammarFeedbackID = null;
+    grammarPracticeView();
+    document.getElementById(event.target.id).focus({ preventScroll: true });
+  }
   if (event.target.id === "auto-pronounce") {
     autoPronounce = event.target.checked;
     save("auto-pronounce", autoPronounce);
