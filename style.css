@@ -117,6 +117,8 @@ progress::-webkit-progress-value { background: var(--blue); border-radius: 99px;
 progress::-moz-progress-bar { background: var(--blue); border-radius: 99px; }
 .flash-shell { display: grid; gap: 10px; margin-top: 18px; }
 .flash-tools { display: flex; align-items: center; justify-content: space-between; }
+.auto-pronounce { display: inline-flex; align-items: center; gap: 8px; min-height: 46px; padding-inline: 10px; font-weight: 700; cursor: pointer; }
+.auto-pronounce input { width: 18px; height: 18px; margin: 0; accent-color: var(--blue); cursor: pointer; }
 .flash-card { position: relative; min-width: 0; border-radius: 16px; perspective: 1100px; }
 .flash-rotor { display: grid; grid-template-columns: minmax(0, 1fr); border-radius: inherit; transform-style: preserve-3d; transition: transform 480ms cubic-bezier(.25, .65, .3, 1); }
 .flash-card.revealed .flash-rotor { transform: rotateX(180deg); }

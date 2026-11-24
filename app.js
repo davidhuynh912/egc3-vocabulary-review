@@ -56,6 +56,7 @@ let query = "";
 let deck = [];
 let cardIndex = 0;
 let revealed = false;
+let autoPronounce = load("auto-pronounce", false) === true;
 let feedbackID = null;
 let completed = false;
 let reviewed = new Set(load("reviewed", []).filter(id => entries.has(id)));
@@ -219,6 +220,10 @@ function flashView() {
       <button class="button" data-action="next-card" ${cardIndex === deck.length - 1 ? "disabled" : ""}>Next</button>
       <button class="button" data-action="shuffle" ${deck.length < 2 ? "disabled" : ""}>Shuffle</button>
       <button class="button primary" data-action="learned" aria-pressed="${isLearned}">${isLearned ? "Learned · Undo" : "Mark as learned"}</button>
+      <label class="auto-pronounce">
+        <input type="checkbox" id="auto-pronounce" ${autoPronounce ? "checked" : ""}>
+        Auto-pronounce
+      </label>
     </div>
   </div>`;
   updateCardProgress();
@@ -415,6 +420,7 @@ function handleAction(event) {
     render();
     const nextFocus = content.querySelector(`[data-action="${action}"]:not(:disabled)`) || content.querySelector("[data-action=flip]");
     nextFocus?.focus({ preventScroll: true });
+    if (action === "next-card" && autoPronounce) speak(deck[cardIndex].id);
   } else if (mode === "practice") {
     if (action === "answer" && !Object.hasOwn(responses, question)) {
       responses[question] = id;
@@ -465,4 +471,10 @@ window.addEventListener("hashchange", () => {
   resetView();
 });
 content.addEventListener("click", handleAction);
+content.addEventListener("change", event => {
+  if (event.target.id === "auto-pronounce") {
+    autoPronounce = event.target.checked;
+    save("auto-pronounce", autoPronounce);
+  }
+});
 resetView();
