@@ -12,6 +12,22 @@ const icons = {
 const sections = { LS: "Listening–Speaking", WR: "Writing–Reading" };
 const britishSpellings = { "1-WR-1": "behaviour" };
 const unavailableAudio = "Pronunciation audio is unavailable.";
+const slowDownMessages = [
+  "Please slow down. Even the Flash reads the card first.",
+  "Are you a robot, or is your mouse just that fast?",
+  "Breaking news: Flashcards spotted fleeing the scene.",
+  "Plot twist: There’s a word on the card.",
+  "Hold on! The last card didn’t even get to say goodbye.",
+  "Nice click speed. Now let’s see that vocabulary.",
+  "The Next button would like a word with you.",
+  "Please slow down. The flashcards are getting dizzy.",
+  "One second. The cards are putting on their seatbelts.",
+  "That’s a lot of cardio for one finger.",
+];
+const flashNavigationTimes = [];
+const flashBurst = { limit: 2, windowMs: 1000 };
+const flashWindow = { limit: 8, windowMs: 5000 };
+let slowDownIndex = 0;
 const modes = {
   vocabulary: ["Vocabulary", "Find words, meanings and examples from the Skillful 2 word lists."],
   flashcards: ["Flashcards", "Recall the meaning, then flip the card to check."],
@@ -344,7 +360,7 @@ const audio = $("#pronunciation-player");
 let audioTimer;
 let audioRequest = 0;
 
-function audioStatus(message = "") {
+function showStudyStatus(message = "") {
   const status = $("#audio-status");
   clearTimeout(audioTimer);
   status.textContent = message;
@@ -356,14 +372,30 @@ async function speak(id) {
   const clip = clips[id];
   if (!clip) return;
   const request = ++audioRequest;
-  audioStatus();
+  showStudyStatus();
   audio.pause();
   audio.src = "audio/" + clip;
   try {
     await audio.play();
   } catch {
-    if (request === audioRequest) audioStatus("Pronunciation could not play. Try the speaker again.");
+    if (request === audioRequest) showStudyStatus("Pronunciation could not play. Try the speaker again.");
   }
+}
+
+function allowFlashNavigation() {
+  const now = performance.now();
+  while (flashNavigationTimes.length && now - flashNavigationTimes[0] >= flashWindow.windowMs) {
+    flashNavigationTimes.shift();
+  }
+  const burstStart = flashNavigationTimes.at(-flashBurst.limit);
+  const tooFast = burstStart !== undefined && now - burstStart < flashBurst.windowMs;
+  if (tooFast || flashNavigationTimes.length >= flashWindow.limit) {
+    showStudyStatus(slowDownMessages[slowDownIndex]);
+    slowDownIndex = (slowDownIndex + 1) % slowDownMessages.length;
+    return false;
+  }
+  flashNavigationTimes.push(now);
+  return true;
 }
 
 function handleAction(event) {
@@ -377,7 +409,7 @@ function handleAction(event) {
   if (action === "no-audio") {
     audioRequest++;
     audio.pause();
-    audioStatus(unavailableAudio);
+    showStudyStatus(unavailableAudio);
     return;
   }
   if (action === "more") {
@@ -398,6 +430,7 @@ function handleAction(event) {
       return;
     }
     if (action === "next-card" || action === "shuffle") {
+      if (!allowFlashNavigation()) return;
       const id = deck[cardIndex].id;
       if (!reviewed.has(id)) {
         reviewed.add(id);
