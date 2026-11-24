@@ -357,6 +357,7 @@ function selectUnit(value, restoreFocus) {
 }
 
 const audio = $("#pronunciation-player");
+const flashSpeedDialog = $("#flash-speed-dialog");
 let audioTimer;
 let audioRequest = 0;
 
@@ -383,6 +384,7 @@ async function speak(id) {
 }
 
 function allowFlashNavigation() {
+  if (flashSpeedDialog.open) return false;
   const now = performance.now();
   while (flashNavigationTimes.length && now - flashNavigationTimes[0] >= flashWindow.windowMs) {
     flashNavigationTimes.shift();
@@ -390,8 +392,9 @@ function allowFlashNavigation() {
   const burstStart = flashNavigationTimes.at(-flashBurst.limit);
   const tooFast = burstStart !== undefined && now - burstStart < flashBurst.windowMs;
   if (tooFast || flashNavigationTimes.length >= flashWindow.limit) {
-    showStudyStatus(slowDownMessages[slowDownIndex]);
+    $("#flash-speed-message").textContent = slowDownMessages[slowDownIndex];
     slowDownIndex = (slowDownIndex + 1) % slowDownMessages.length;
+    flashSpeedDialog.showModal();
     return false;
   }
   flashNavigationTimes.push(now);
@@ -501,6 +504,13 @@ window.addEventListener("hashchange", () => {
   resetView();
 });
 content.addEventListener("click", handleAction);
+flashSpeedDialog.addEventListener("cancel", event => event.preventDefault());
+flashSpeedDialog.addEventListener("click", event => {
+  if (event.target === flashSpeedDialog) flashSpeedDialog.querySelector("button").focus();
+});
+flashSpeedDialog.addEventListener("keydown", event => {
+  if (event.repeat && (event.key === "Enter" || event.key === " ")) event.preventDefault();
+});
 content.addEventListener("change", event => {
   if (event.target.id === "auto-pronounce") {
     autoPronounce = event.target.checked;

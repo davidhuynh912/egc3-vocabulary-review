@@ -164,6 +164,21 @@ progress::-moz-progress-bar { background: var(--blue); border-radius: 99px; }
 .quiz-breakdown li { background: #edf3ff; border-radius: 9px; padding: 7px 11px; }
 .quiz-complete { margin-top: 16px; }
 .audio-status { position: fixed; z-index: 5; bottom: 18px; right: 18px; max-width: min(360px, calc(100vw - 36px)); padding: 10px 14px; color: #fff; background: #24395e; border-radius: 9px; }
+.flash-speed-dialog {
+  width: min(440px, calc(100% - 32px));
+  margin: auto;
+  padding: clamp(22px, 5vw, 32px);
+  border: 1px solid #d5e2ff;
+  border-radius: 20px;
+  background: #f6f8ff;
+  color: #192b4b;
+  box-shadow: 0 18px 50px #14264540;
+  text-align: center;
+}
+.flash-speed-dialog::backdrop { background: #192b4b88; }
+.flash-speed-dialog p { margin: 0; font-size: clamp(1.1rem, 4vw, 1.3rem); font-weight: 700; line-height: 1.45; }
+.flash-speed-dialog form { margin-top: 20px; }
+.flash-speed-dialog button { min-width: 112px; }
 .footer { padding: 25px 0 30px; margin-top: 30px; border-top: 1px solid var(--edge); color: #50617b; font-size: .88rem; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 20px; }
 @media (max-width: 950px) {
   .frame { width: min(100% - 40px, 1232px); }

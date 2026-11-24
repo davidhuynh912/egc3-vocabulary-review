@@ -6,11 +6,11 @@
   <meta name="theme-color" content="#f4f7ff">
   <meta name="description" content="Review Skillful 2 vocabulary across ten units with bilingual word lists, flashcards and practice.">
   <title>Word Studio · EGC 3</title>
-  <link rel="stylesheet" href="style.css?v=auto-pronounce">
+  <link rel="stylesheet" href="style.css?v=flashcard-speed-popup">
   <script defer src="vocabulary.js"></script>
   <script defer src="questions.js"></script>
   <script defer src="audio-clips.js?v=isabella-phrases"></script>
-  <script defer src="app.js?v=flashcard-speed-limit"></script>
+  <script defer src="app.js?v=flashcard-speed-popup"></script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to study content</a>
@@ -65,6 +65,12 @@
     </div>
     <audio id="pronunciation-player" preload="none" hidden></audio>
     <div id="audio-status" role="status" class="audio-status" hidden></div>
+    <dialog id="flash-speed-dialog" class="flash-speed-dialog" aria-label="Slow down" aria-describedby="flash-speed-message">
+      <p id="flash-speed-message"></p>
+      <form method="dialog">
+        <button type="submit" class="button primary" autofocus>Got it!</button>
+      </form>
+    </dialog>
     <noscript><p>Enable JavaScript to use Word Studio.</p></noscript>
   </main>
   <footer class="frame footer">
