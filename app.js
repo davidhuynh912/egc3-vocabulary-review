@@ -4,6 +4,7 @@ const icons = {
   book: '<path d="M12 7v14m0-14C8 4 4 4 2.5 5v14c3-1 6-.5 9.5 2 3.5-2.5 6.5-3 9.5-2V5C20 4 16 4 12 7Z"/>',
   cards: '<rect x="8" y="7" width="12" height="14" rx="2"/><path d="M5 17H4a1 1 0 0 1-1-1V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2"/>',
   pencil: '<path d="m16 3 5 5M4 20l4-1 12-12a2.8 2.8 0 0 0-4-4L4 15l-1 6 6-1"/>',
+  grammar: '<path d="M5 3h10l4 4v14H5zM15 3v5h4M8 17l2.5-6 2.5 6M9 15h3m2 1 1.5 1.5L18 14"/>',
   layers: '<path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5"/>',
   search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/>',
   volume: '<path d="M3 9v6h4l5 4V5L7 9H3Zm13 0a4 4 0 0 1 0 6m2.5-8.5a7.5 7.5 0 0 1 0 11"/>',
@@ -30,6 +31,7 @@ const flashWindow = { limit: 8, windowMs: 5000 };
 let slowDownIndex = 0;
 const modes = {
   vocabulary: ["Vocabulary", "Find words, meanings and examples from the Skillful 2 word lists."],
+  grammar: ["Grammar", "See how each structure is formed, what it means and when to use it."],
   flashcards: ["Flashcards", "Recall the meaning, then flip the card to check."],
   practice: ["Practice", "Choose the word or phrase that best completes each sentence."],
 };
@@ -202,6 +204,33 @@ function vocabularyView() {
     : empty("No matching words", "Try another search term, unit or skill.");
 }
 
+function grammarView() {
+  const lessons = grammarLessons.filter(lesson => matches(lesson));
+  $("#scope-count").textContent = `${lessons.length} ${lessons.length === 1 ? "lesson" : "lessons"}`;
+  content.innerHTML = units.map(unitID => {
+    const unitLessons = lessons.filter(lesson => String(lesson.unit) === unitID);
+    if (!unitLessons.length) return "";
+    const cards = unitLessons.map(lesson => `
+      <article class="panel grammar-lesson">
+        <header class="grammar-heading">
+          <div>${pill(lesson.section)}<h4>${text(lesson.title)}</h4></div>
+          <p>${lesson.supplement ? "Writing skill" : "Grammar"} · p. ${lesson.page}</p>
+        </header>
+        <dl class="grammar-notes">
+          <div class="grammar-form"><dt>Form</dt><dd><ul>${lesson.form.map(rule => `<li>${text(rule)}</li>`).join("")}</ul></dd></div>
+          <div><dt>Meaning</dt><dd>${text(lesson.meaning)}</dd></div>
+          <div><dt>Use</dt><dd>${text(lesson.use)}</dd></div>
+        </dl>
+        <div class="grammar-examples">
+          <h5>Examples</h5>
+          <ul>${lesson.examples.map(example => `<li>${text(example)}</li>`).join("")}</ul>
+        </div>
+      </article>`).join("");
+    return `<section class="unit-group"><h3><span>Unit ${unitID}</span> · ${text(vocabulary.units[unitID])}</h3>
+      <div class="grammar-lessons">${cards}</div></section>`;
+  }).join("");
+}
+
 function flashView() {
   $("#scope-count").textContent = `${deck.length} ${deck.length === 1 ? "card" : "cards"}`;
   if (!deck.length) {
@@ -334,6 +363,7 @@ function practiceView() {
 
 function render() {
   if (mode === "vocabulary") vocabularyView();
+  else if (mode === "grammar") grammarView();
   else if (mode === "flashcards") flashView();
   else practiceView();
 }

@@ -102,6 +102,18 @@ button[aria-pressed="true"] .unit-index { background: var(--blue); color: #fff; 
 .word-family summary { cursor: pointer; width: fit-content; font-size: .87rem; }
 .word-family p { white-space: pre-wrap; margin-top: 5px; }
 .panel { padding: clamp(16px, 3.5vw, 30px); }
+.grammar-lessons { display: grid; gap: 14px; margin-top: 12px; }
+.grammar-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 8px 14px; flex-wrap: wrap; }
+.grammar-heading h4 { display: inline; margin-left: 8px; font-size: 1.2rem; overflow-wrap: anywhere; }
+.grammar-heading p { color: var(--muted); font-size: .9rem; }
+.grammar-notes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 14px 0 0; }
+.grammar-notes > div { padding: 12px 14px; border: 1px solid var(--edge); border-radius: 10px; overflow-wrap: anywhere; }
+.grammar-notes dt, .grammar-examples h5 { margin: 0 0 4px; color: var(--strong-blue); font-size: 1rem; font-weight: 800; }
+.grammar-notes dd { margin: 0; }
+.grammar-notes ul, .grammar-examples ul { margin: 0; padding-left: 1.25em; }
+.grammar-notes li + li, .grammar-examples li + li { margin-top: 5px; }
+.grammar-notes .grammar-form { grid-column: 1 / -1; background: #eef3ff; }
+.grammar-examples { margin-top: 12px; padding: 12px 14px; background: #f2f5fc; border-radius: 10px; }
 .empty { text-align: center; padding-block: 36px; }
 .empty p { color: var(--muted); margin-top: 6px; }
 .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
@@ -185,12 +197,14 @@ progress::-moz-progress-bar { background: var(--blue); border-radius: 99px; }
   .workspace { grid-template-columns: 176px minmax(0, 1fr); gap: 18px; }
   .word-card { padding: 12px; }
 }
-@media (max-width: 720px) {
-  .frame { width: calc(100% - 28px); }
+@media (max-width: 820px) {
   .topbar-inner { flex-wrap: wrap; gap: 10px; padding-block: 10px; }
   .navigation { order: 3; flex: 0 0 100%; }
   .navigation a { flex: 1; padding-inline: 4px; font-size: .88rem; }
   .navigation .icon { width: 16px; height: 16px; }
+}
+@media (max-width: 720px) {
+  .frame { width: calc(100% - 28px); }
   .hero { margin-block: 15px; min-height: 190px; grid-template-columns: 1.65fr 1fr; border-radius: 19px; }
   .hero-copy { padding: 20px 0 22px 16px; }
   .hero h1 { font-size: clamp(1.55rem, 5.4vw, 2.85rem); }
@@ -206,7 +220,10 @@ progress::-moz-progress-bar { background: var(--blue); border-radius: 99px; }
   .mobile-units select { min-width: 0; flex: 1; min-height: 44px; padding: 5px 30px 5px 10px; border: 1px solid var(--edge); border-radius: 8px; appearance: none; background: linear-gradient(45deg, transparent 50%, #40588d 50%) calc(100% - 17px) center / 5px 5px no-repeat, linear-gradient(135deg, #40588d 50%, transparent 50%) calc(100% - 12px) center / 5px 5px no-repeat, #f7f9ff; }
 }
 @media (max-width: 475px) {
-  .grid, .answers { grid-template-columns: minmax(0, 1fr); }
+  .grid, .answers, .grammar-notes { grid-template-columns: minmax(0, 1fr); }
+  .navigation { min-width: 0; gap: 2px; }
+  .navigation a { min-width: 0; padding-inline: 2px; font-size: .8rem; }
+  .navigation a > [data-icon] { display: none; }
   .study-heading { flex-wrap: wrap; gap: 5px; }
   .filters { margin-bottom: 16px; }
 }
