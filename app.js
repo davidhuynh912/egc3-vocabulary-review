@@ -193,7 +193,6 @@ function flashView() {
     return;
   }
   const card = deck[cardIndex];
-  const isLearned = learned.has(card.id);
   content.innerHTML = `<div class="panel">
     <div class="meter-label"><span>Card ${cardIndex + 1} of ${deck.length}</span><span data-card-progress></span></div>
     <progress value="0" max="${deck.length}" aria-label="Cards reviewed"></progress>
@@ -219,7 +218,6 @@ function flashView() {
       <button class="button" data-action="previous" ${cardIndex === 0 ? "disabled" : ""}>Previous</button>
       <button class="button" data-action="next-card" ${cardIndex === deck.length - 1 ? "disabled" : ""}>Next</button>
       <button class="button" data-action="shuffle" ${deck.length < 2 ? "disabled" : ""}>Shuffle</button>
-      <button class="button primary" data-action="learned" aria-pressed="${isLearned}">${isLearned ? "Learned · Undo" : "Mark as learned"}</button>
       <label class="auto-pronounce">
         <input type="checkbox" id="auto-pronounce" ${autoPronounce ? "checked" : ""}>
         Auto-pronounce
@@ -245,9 +243,9 @@ function flipCard(button) {
   shell.querySelector(".flash-back").setAttribute("aria-hidden", String(!revealed));
   button.setAttribute("aria-expanded", String(revealed));
   button.setAttribute("aria-label", `${card.word}. ${revealed ? "Hide" : "Reveal"} details`);
-  if (revealed && !reviewed.has(card.id)) {
-    reviewed.add(card.id);
-    save("reviewed", [...reviewed]);
+  if (revealed && !learned.has(card.id)) {
+    learned.add(card.id);
+    save("learned", [...learned]);
     updateCardProgress();
   }
 }
@@ -398,7 +396,15 @@ function handleAction(event) {
     if (action === "flip") {
       flipCard(button);
       return;
-    } else if (action === "previous" || action === "next-card") {
+    }
+    if (action === "next-card" || action === "shuffle") {
+      const id = deck[cardIndex].id;
+      if (!reviewed.has(id)) {
+        reviewed.add(id);
+        save("reviewed", [...reviewed]);
+      }
+    }
+    if (action === "previous" || action === "next-card") {
       cardIndex += action === "previous" ? -1 : 1;
       revealed = false;
     } else if (action === "shuffle") {
@@ -407,15 +413,6 @@ function handleAction(event) {
       if (deck[0] === first) [deck[0], deck[1]] = [deck[1], deck[0]];
       cardIndex = 0;
       revealed = false;
-    } else if (action === "learned") {
-      const id = deck[cardIndex].id;
-      if (learned.has(id)) learned.delete(id);
-      else {
-        learned.add(id);
-        reviewed.add(id);
-        save("reviewed", [...reviewed]);
-      }
-      save("learned", [...learned]);
     }
     render();
     const nextFocus = content.querySelector(`[data-action="${action}"]:not(:disabled)`) || content.querySelector("[data-action=flip]");
